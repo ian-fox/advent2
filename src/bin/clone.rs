@@ -2,10 +2,10 @@
 
 use libc::{c_int, c_void};
 use std::env;
-use std::process;
-use std::slice;
 use std::fs::File;
 use std::io::{Error, Write};
+use std::process;
+use std::slice;
 
 const BUF_SIZE: usize = 4096;
 static mut BUF: [u8; BUF_SIZE] = [0u8; BUF_SIZE];
@@ -25,7 +25,8 @@ extern "C" fn cb(arg: *mut c_void) -> c_int {
 
         if arg != 0x0 as *mut c_void {
             // Install the UID map
-            let mut f = File::create("/proc/self/uid_map").expect("Could not open /proc/self/uid_map");
+            let mut f =
+                File::create("/proc/self/uid_map").expect("Could not open /proc/self/uid_map");
             let arg_slice: &[u8] = slice::from_raw_parts(arg as *mut u8, ARG_SIZE);
             f.write_all(arg_slice).expect("Could not write UID map");
 
@@ -63,7 +64,7 @@ fn main() {
     unsafe {
         let mut flags: c_int = 0;
         let mut arg: *mut c_void = 0 as *mut c_void;
-        
+
         // Need to have the reference out here so that it doesn't get dropped before the call to clone
         let mut uid_map: Box<[u8; ARG_SIZE]>;
 
