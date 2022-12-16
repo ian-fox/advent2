@@ -81,9 +81,15 @@ fn main() {
             "user" => {
                 flags = libc::SIGCHLD | libc::CLONE_NEWUSER;
 
+                // Make sure we're running from somewhere where it'll do something
+                let uid = libc::getuid();
+                if uid == 0 {
+                    println!("You are already root! Try `su advent -c \"./target/debug/clone user\"`")
+                }
+
                 // Set up the uid map
                 uid_map = Box::new([0u8; ARG_SIZE]);
-                let uid_contents = format!("0 {} 1\n", libc::getuid());
+                let uid_contents = format!("0 {} 1\n", uid);
                 println!("UID map contents: {}", uid_contents);
                 for (i, val) in uid_contents.as_bytes().iter().enumerate() {
                     uid_map[i] = *val;
