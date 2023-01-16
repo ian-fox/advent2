@@ -65,7 +65,7 @@ fn main() {
 
         // Print the mappings
         let pid: libc::pid_t = libc::getpid();
-        
+
         println!(
             "{}",
             String::from_utf8(

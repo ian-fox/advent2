@@ -84,7 +84,9 @@ fn main() {
                 // Make sure we're running from somewhere where it'll do something
                 let uid = libc::getuid();
                 if uid == 0 {
-                    println!("You are already root! Try `su advent -c \"./target/debug/clone user\"`")
+                    println!(
+                        "You are already root! Try `su advent -c \"./target/debug/clone user\"`"
+                    )
                 }
 
                 // Set up the uid map

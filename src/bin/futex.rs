@@ -1,5 +1,11 @@
 use libc::{c_int, c_void, pid_t};
-use std::{sync::atomic::{AtomicU32, Ordering}, thread::sleep, time::Duration, ptr, mem::size_of};
+use std::{
+    mem::size_of,
+    ptr,
+    sync::atomic::{AtomicU32, Ordering},
+    thread::sleep,
+    time::Duration,
+};
 
 // futex wrappers because they aren't in libc
 // todo: how much of this is unsafe? Could these wrappers be safe functions?
@@ -86,27 +92,31 @@ struct BoundedBuffer<T> {
     // Another semaphore as a binary semaphore for synchronizing access to data and metadata
     lock: Sem,
 
-    read_idx: usize, // next slot to read
+    read_idx: usize,  // next slot to read
     write_idx: usize, // next slot to write
 
     data: [Option<T>; ARRAY_SIZE],
 }
 
 // Restricting to copyable values because it's a headache trying to do this otherwise and that's not really the point
-impl <T: Copy> BoundedBuffer<T> {
+impl<T: Copy> BoundedBuffer<T> {
     pub fn new() -> Self {
         BoundedBuffer {
             // Count number of empty slots (initially ARRAY_SIZE) and valid elements (initially 0)
-            slots: Sem::new(ARRAY_SIZE.try_into().expect("could not convert usize to u32")),
+            slots: Sem::new(
+                ARRAY_SIZE
+                    .try_into()
+                    .expect("could not convert usize to u32"),
+            ),
             elements: Sem::new(0),
-            
+
             // 1 means the mutex is free
             lock: Sem::new(1),
-            
+
             // Start reading and writing at 0
             read_idx: 0,
             write_idx: 0,
-            
+
             data: [None; ARRAY_SIZE],
         }
     }
@@ -141,7 +151,7 @@ impl <T: Copy> BoundedBuffer<T> {
         // Critical section
         {
             self.lock.down();
-            
+
             self.data[self.write_idx] = Some(val);
             self.write_idx = (self.write_idx + 1) % ARRAY_SIZE;
 
@@ -161,7 +171,14 @@ fn main() {
 
     // Make a shared region of memory for the buffer
     unsafe {
-        let shared_mem = libc::mmap(libc::PT_NULL as *mut c_void, 4096, libc::PROT_READ | libc::PROT_WRITE, libc::MAP_ANONYMOUS | libc::MAP_SHARED, -1, 0);
+        let shared_mem = libc::mmap(
+            libc::PT_NULL as *mut c_void,
+            4096,
+            libc::PROT_READ | libc::PROT_WRITE,
+            libc::MAP_ANONYMOUS | libc::MAP_SHARED,
+            -1,
+            0,
+        );
         if shared_mem == libc::MAP_FAILED {
             panic!("Could not mmap");
         }
@@ -192,10 +209,9 @@ fn main() {
             let val = buf.get();
             println!("Parent: {}", val);
             if val == 5 {
-                break
+                break;
             }
         }
-        
     } else {
         // Child
 
