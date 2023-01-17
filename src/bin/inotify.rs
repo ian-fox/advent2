@@ -5,6 +5,9 @@ use std::io::Error;
 use std::mem::size_of;
 use std::process;
 
+#[macro_use]
+extern crate advent_2;
+
 const BUF_SIZE: usize = 4096;
 static mut BUF: [u8; BUF_SIZE] = [0u8; BUF_SIZE];
 
@@ -20,13 +23,13 @@ fn main() {
     ]);
 
     unsafe {
-        println!("init inotify");
+        debug!("init inotify");
         let inotify_fd = libc::inotify_init();
         if inotify_fd < 0 {
             error_exit("inotify_init");
         }
 
-        println!("add watch");
+        debug!("add watch");
         let path = CString::new(".").unwrap();
         if libc::inotify_add_watch(
             inotify_fd,
@@ -44,7 +47,7 @@ fn main() {
                 break;
             }
 
-            println!("got event[s]");
+            debug!("got event[s]");
 
             let mut event: *const inotify_event =
                 BUF.as_ptr() as *const c_void as *const inotify_event;
